@@ -2,11 +2,16 @@ import React, {useState} from 'react';
 import TagsInput from 'react-tagsinput';
 import 'react-tagsinput/react-tagsinput.css';
 import Dropzone from 'react-dropzone'
+import axios from 'axios'
 
 
 const CreateProduct = (props) => {
 
     const [productVariantPrices, setProductVariantPrices] = useState([])
+    const [productName, setProductName] = useState('')
+    const [productSku, setProductSku] = useState('')
+    const [productDescrip, setProductDescrip] = useState('')
+    const [productImage, setProductImage] = useState('')
 
     const [productVariants, setProductVariant] = useState([
         {
@@ -14,8 +19,10 @@ const CreateProduct = (props) => {
             tags: []
         }
     ])
-    console.log(typeof props.variants)
+
+    console.log("I am from js/components folder: ", typeof props.variants)
     // handle click event of the Add button
+
     const handleAddClick = () => {
         let all_variants = JSON.parse(props.variants.replaceAll("'", '"')).map(el => el.id)
         let selected_variants = productVariants.map(el => el.option);
@@ -74,10 +81,41 @@ const CreateProduct = (props) => {
         return ans;
     }
 
+    //get cookie 
+    function getCookie(name) {
+        var cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            var cookies = document.cookie.split(';');
+            for (var i = 0; i < cookies.length; i++) {
+                var cookie = jQuery.trim(cookies[i]);
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
     // Save product
     let saveProduct = (event) => {
         event.preventDefault();
         // TODO : write your code here to save the product
+        const form_data = {"product": {"title": productName, "description": productDescrip, "sku": productSku}, "image": productImage}
+        console.log(form_data)
+        let url = 'http://localhost:8000/product/create/new';
+        var csrftoken = getCookie('csrftoken');
+        axios.post(url, form_data, {
+        headers: {
+                {% comment %} 'Accept': 'application/json', {% endcomment %}
+                'Content-Type': 'multipart/form-data',
+                'X-CSRFToken': csrftoken
+            }
+        })
+        .then(res => {
+            console.log(res.data);
+        })
+        .catch(err => console.log(err))
     }
 
 
@@ -90,15 +128,15 @@ const CreateProduct = (props) => {
                             <div className="card-body">
                                 <div className="form-group">
                                     <label htmlFor="">Product Name</label>
-                                    <input type="text" placeholder="Product Name" className="form-control"/>
+                                    <input onChange={(e) => setProductName(e.target.value)} type="text" placeholder="Product Name" className="form-control"/>
                                 </div>
                                 <div className="form-group">
                                     <label htmlFor="">Product SKU</label>
-                                    <input type="text" placeholder="Product Name" className="form-control"/>
+                                    <input onChange={(e) => setProductSku(e.target.value)} type="text" placeholder="Product Name" className="form-control"/>
                                 </div>
                                 <div className="form-group">
                                     <label htmlFor="">Description</label>
-                                    <textarea id="" cols="30" rows="4" className="form-control"></textarea>
+                                    <textarea onChange={(e) => setProductDescrip(e.target.value)} id="" cols="30" rows="4" className="form-control"></textarea>
                                 </div>
                             </div>
                         </div>
@@ -109,7 +147,7 @@ const CreateProduct = (props) => {
                                 <h6 className="m-0 font-weight-bold text-primary">Media</h6>
                             </div>
                             <div className="card-body border">
-                                <Dropzone onDrop={acceptedFiles => console.log(acceptedFiles)}>
+                                <Dropzone onDrop={acceptedFiles => setProductImage(acceptedFiles)}>
                                     {({getRootProps, getInputProps}) => (
                                         <section>
                                             <div {...getRootProps()}>
@@ -215,7 +253,7 @@ const CreateProduct = (props) => {
                     </div>
                 </div>
 
-                <button type="button" onClick={saveProduct} className="btn btn-lg btn-primary">Save</button>
+                <button type="button" onClick={saveProduct} className="btn btn-lg btn-primary" style={{marginRight:2 + 'em'}}>SaveShamim</button>
                 <button type="button" className="btn btn-secondary btn-lg">Cancel</button>
             </section>
         </div>

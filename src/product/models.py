@@ -7,12 +7,22 @@ class Variant(TimeStampMixin):
     title = models.CharField(max_length=40, unique=True)
     description = models.TextField()
     active = models.BooleanField(default=True)
+    
+    def __str__(self):
+        return self.title
 
 
 class Product(TimeStampMixin):
     title = models.CharField(max_length=255)
     sku = models.SlugField(max_length=255, unique=True)
     description = models.TextField()
+    
+    @property
+    def get_counter(self):
+        return Product.objects.count()
+    
+    def __str__(self):
+        return self.title 
 
 
 class ProductImage(TimeStampMixin):
